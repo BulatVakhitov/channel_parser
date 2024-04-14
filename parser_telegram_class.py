@@ -25,15 +25,14 @@ class Telegram_Parser:
         self.api_id = api_id
         self.api_hash = api_hash
         self.phone = phone
-        self.client = self.client_start(phone=phone, api_id=api_id, api_hash=api_hash)
 
-    @classmethod
-    def client_start(cls, phone, api_id, api_hash):
+    def client_start(self):
         try:
-            client = TelegramClient(session=phone, api_id=api_id, api_hash=api_hash, system_version="4.16.30-vxCUSTOM")
-            client.start(phone=phone)
+            client = TelegramClient(session=self.phone, api_id=self.api_id, api_hash=self.api_hash, system_version="4.16.30-vxCUSTOM")
+            if not client.is_connected():
+                client.start(phone=self.phone)
 
-            return client
+            self.client = client
         except Exception:
             raise Exception("Неправильно введен токен")
 
@@ -73,10 +72,3 @@ class Telegram_Parser:
 
     def client_disconnect(self):
         self.client.disconnect()
-
-
-#First time auth
-#parser = Telegram_Parser(11111111, '11111111111111111111111111111111', '11111111111')
-#print(parser.client.is_connected())
-#parser.client_disconnect()
-#parser.parse_channel(url="https://t.me/rian_ru")

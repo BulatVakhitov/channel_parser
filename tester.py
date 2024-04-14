@@ -17,21 +17,28 @@ class Tester:
     )
     def test_client_autorization(self, api_id, api_hash, phone, res, expectation):
         with expectation:
-            assert Telegram_Parser(api_id=api_id, api_hash=api_hash, phone=phone).client_start(phone=phone, api_id=api_id, api_hash=api_hash).is_connected() == res
+            parser = Telegram_Parser(api_id=api_id, api_hash=api_hash, phone=phone)
+            parser.client_start()
+            result = parser.client.is_connected()
+            parser.client_disconnect()
+            assert result == res
 
     @pytest.mark.parametrize(
-        'api_id, api_hash, phone, url, expectation',
+        'api_id, api_hash, phone, url, res, expectation',
         [
-            (11111111, '11111111111111111111111111111111', '11111111111', "https://t.me/rian_ru", True, does_not_raise()),  # Enter Normal Data
+            (11111111, '11111111111111111111111111111111', '11111111111', "t.me/rian_ru", True, does_not_raise()),  # Enter Normal Data
             (11111111, '11111111111111111111111111111111', '11111111111', None, None, pytest.raises(Exception)),
-            (None, None, None, None)
+            (None, None, None, None, None, pytest.raises(Exception))
         ]
     )
     def test_json_file_creating(self, api_id, api_hash, phone, url, res, expectation):
         with expectation:
-            Telegram_Parser(api_id=api_id, api_hash=api_hash, phone=phone).parse_channel(url=url)
+            parser = Telegram_Parser(api_id=api_id, api_hash=api_hash, phone=phone)
+            parser.client_start()
+            parser.parse_channel(url=url)
+            parser.client_disconnect()
             df = pd.read_json("channel_messages.json")
-            assert df.shape[0] > 0 == res
+            assert (df.shape[0] > 0) == res
 
     def test_json_file_columns_num(self):
         assert len(pd.read_json("channel_messages.json").columns) == 33
